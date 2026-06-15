@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getAllBooks, getAllAuthors } from "@/lib/data";
+import { getAllBooksSync, getAllAuthorsSync } from "@/lib/data";
 
 export default function Home() {
-  const books = getAllBooks().slice(0, 6); // Get first 6 books
-  const authors = getAllAuthors();
+  const books = getAllBooksSync().slice(0, 6); // Get first 6 books
+  const authors = getAllAuthorsSync();
 
   return (
     <div className="min-h-screen">
@@ -44,7 +44,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div className="p-6">
               <div className="text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
-                {getAllBooks().length}
+                {getAllBooksSync().length}
               </div>
               <div className="text-zinc-600 dark:text-zinc-400">
                 Books Available

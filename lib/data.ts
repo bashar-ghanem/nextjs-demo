@@ -262,6 +262,14 @@ export async function getAllBooks(): Promise<Book[]> {
   return books;
 }
 
+export function getAllBooksSync(): Book[] {
+  return books;
+}
+
+export function getAllAuthorsSync(): Author[] {
+  return authors;
+}
+
 export function getAllPublishers(): Publisher[] {
   return publishers;
 }
