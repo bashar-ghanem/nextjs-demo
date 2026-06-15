@@ -9,11 +9,11 @@ import { Book, Author } from '@/lib/data';
 interface BooksClientProps {
   initialBooks: Book[];
   authors: Author[];
+  selectedGenre?: string;
 }
 
-export default function BooksClient({ initialBooks, authors }: BooksClientProps) {
+export default function BooksClient({ initialBooks, authors, selectedGenre }: BooksClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedGenre, setSelectedGenre] = useState<string>('all');
 
   // Get unique genres
   const genres = useMemo(() => {
@@ -26,7 +26,7 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
     return initialBooks.filter(book => {
       const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            authors.find(a => a.id === book.authorId)?.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesGenre = selectedGenre === 'all' || book.genre === selectedGenre;
+      const matchesGenre = !selectedGenre || selectedGenre === 'all' || book.genre === selectedGenre;
       return matchesSearch && matchesGenre;
     });
   }, [initialBooks, searchQuery, selectedGenre, authors]);
@@ -46,17 +46,15 @@ export default function BooksClient({ initialBooks, authors }: BooksClientProps)
       <div className="mb-8">
         <div className="flex flex-wrap gap-2">
           {genres.map((genre) => (
-            <button
-              key={genre}
-              onClick={() => setSelectedGenre(genre)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                selectedGenre === genre
+            <Link key={genre} href={genre === 'all' ? '/books' : `/books?genre=${encodeURIComponent(genre)}`}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                  genre === (selectedGenre || 'all')
                   ? 'bg-zinc-900 dark:bg-zinc-50 text-white dark:text-zinc-900'
                   : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
               }`}
             >
               {genre === 'all' ? 'All Genres' : genre}
-            </button>
+            </Link>
           ))}
         </div>
       </div>
