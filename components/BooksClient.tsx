@@ -10,10 +10,28 @@ interface BooksClientProps {
   initialBooks: Book[];
   authors: Author[];
   selectedGenre?: string;
+  selectedPage?: number;
 }
 
-export default function BooksClient({ initialBooks, authors, selectedGenre }: BooksClientProps) {
+const BOOKS_PER_PAGE = 6;
+
+export default function BooksClient({ initialBooks, authors, selectedGenre, selectedPage }: BooksClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const currentPage = selectedPage ?? 1;
+
+  function createPageUrl(page: number) {
+    const params = new URLSearchParams();
+    
+    if (selectedGenre && selectedGenre !== 'all') {
+      params.set('genre', selectedGenre);
+    }
+    
+    if (page && page > 1) {
+      params.set('page', String(page));
+    }
+    
+    return `/books?${params.toString()}`;
+}
 
   // Get unique genres
   const genres = useMemo(() => {
@@ -22,14 +40,18 @@ export default function BooksClient({ initialBooks, authors, selectedGenre }: Bo
   }, [initialBooks]);
 
   // Filter books based on search and genre
-  const filteredBooks = useMemo(() => {
-    return initialBooks.filter(book => {
+  const {pagedFilteredBooks, totalFilteredBooks} = useMemo(() => {
+    const filteredBooks = initialBooks.filter(book => {
       const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                            authors.find(a => a.id === book.authorId)?.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesGenre = !selectedGenre || selectedGenre === 'all' || book.genre === selectedGenre;
       return matchesSearch && matchesGenre;
     });
-  }, [initialBooks, searchQuery, selectedGenre, authors]);
+    const totalFilteredBooks = filteredBooks.length;
+    const startIndex = (currentPage - 1) * BOOKS_PER_PAGE;
+    const pagedFilteredBooks = filteredBooks.slice(startIndex, startIndex + BOOKS_PER_PAGE);
+    return { pagedFilteredBooks, totalFilteredBooks };
+  }, [initialBooks, searchQuery, selectedGenre, authors, currentPage]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -61,10 +83,10 @@ export default function BooksClient({ initialBooks, authors, selectedGenre }: Bo
 
       {/* Results count */}
       <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-        Showing {filteredBooks.length} {filteredBooks.length === 1 ? 'book' : 'books'}
+        Showing {pagedFilteredBooks.length} {pagedFilteredBooks.length === 1 ? 'book' : 'books'}
       </p>
       
-      {filteredBooks.length === 0 ? (
+      {totalFilteredBooks === 0 ? (
         <div className="text-center py-12">
           <p className="text-xl text-zinc-600 dark:text-zinc-400">
             No books found matching your criteria.
@@ -72,7 +94,7 @@ export default function BooksClient({ initialBooks, authors, selectedGenre }: Bo
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredBooks.map((book) => {
+          {pagedFilteredBooks.map((book) => {
             const author = authors.find(a => a.id === book.authorId);
             
             return (
@@ -106,6 +128,36 @@ export default function BooksClient({ initialBooks, authors, selectedGenre }: Bo
               </Link>
             );
           })}
+        </div>
+      )}
+      {/* Pagination */}
+      {totalFilteredBooks > 0 && (
+        <div className="flex justify-center items-center mt-8 gap-4">
+          {currentPage > 1 ? (
+            <Link
+              href={createPageUrl(currentPage - 1)}
+              className="px-4 py-2 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-400 dark:hover:bg-zinc-700"
+            >
+              Previous
+            </Link>
+          ) : (
+            <span className="px-4 py-2 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed">
+              Previous
+            </span>
+          )}
+          <span className="text-zinc-700 dark:text-zinc-300"> {currentPage}</span>
+          {pagedFilteredBooks.length === BOOKS_PER_PAGE ? (
+            <Link
+              href={createPageUrl(currentPage + 1)}
+              className="px-4 py-2 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-400 dark:hover:bg-zinc-700"
+            >
+              Next
+            </Link>
+          ) : (
+            <span className="px-4 py-2 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed">
+              Next
+            </span>
+          )}
         </div>
       )}
     </div>

@@ -2,8 +2,29 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getAllAuthors, getBooksByAuthorId } from '@/lib/data';
 
-export default function AuthorsPage() {
+const AUTHORS_PER_PAGE = 3;
+
+export default async function AuthorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    page?: string;
+  }>;
+}) {
+  const { page } = await searchParams;
   const authors = getAllAuthors();
+  const totalPages = Math.max(1, Math.ceil(authors.length / AUTHORS_PER_PAGE));
+  const parsedPage = Number(page ?? '1');
+  const currentPage =
+    Number.isInteger(parsedPage) && parsedPage > 0
+      ? Math.min(parsedPage, totalPages)
+      : 1;
+  const startIndex = (currentPage - 1) * AUTHORS_PER_PAGE;
+  const pagedAuthors = authors.slice(startIndex, startIndex + AUTHORS_PER_PAGE);
+
+  function createPageUrl(page: number) {
+    return page > 1 ? `/authors?page=${page}` : '/authors';
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -12,7 +33,7 @@ export default function AuthorsPage() {
       </h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {authors.map((author) => {
+        {pagedAuthors.map((author) => {
           const bookCount = getBooksByAuthorId(author.id).length;
           
           return (
@@ -58,6 +79,40 @@ export default function AuthorsPage() {
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center mt-8 gap-4">
+          {currentPage > 1 ? (
+            <Link
+              href={createPageUrl(currentPage - 1)}
+              className="px-4 py-2 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-400 dark:hover:bg-zinc-700"
+            >
+              Previous
+            </Link>
+          ) : (
+            <span className="px-4 py-2 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed">
+              Previous
+            </span>
+          )}
+
+          <span className="text-zinc-700 dark:text-zinc-300">
+            {currentPage} / {totalPages}
+          </span>
+
+          {currentPage < totalPages ? (
+            <Link
+              href={createPageUrl(currentPage + 1)}
+              className="px-4 py-2 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:text-zinc-400 dark:hover:bg-zinc-700"
+            >
+              Next
+            </Link>
+          ) : (
+            <span className="px-4 py-2 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-600 cursor-not-allowed">
+              Next
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }
