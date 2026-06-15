@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { getBookById, getAuthorById, getBooksByAuthorId } from '@/lib/data';
+import { getBookById, getAuthorById, getBooksByAuthorId, getPublisherById } from '@/lib/data';
 import FavoriteButton from '@/components/FavoriteButton';
 
 export default async function BookPage({
@@ -16,10 +16,11 @@ export default async function BookPage({
     notFound();
   }
   
-  const author = getAuthorById(book.authorId);
-  const otherBooksByAuthor = getBooksByAuthorId(book.authorId).filter(
+  const author = book.authorId ? getAuthorById(book.authorId) : null;
+  const publisher = book.publisherId ? getPublisherById(book.publisherId) : null;
+  const otherBooksByAuthor = book.authorId ? getBooksByAuthorId(book.authorId).filter(
     b => b.id !== book.id
-  );
+  ) : [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -56,6 +57,15 @@ export default async function BookPage({
           >
             by {author?.name}
           </Link>
+
+          <div>
+            <Link 
+              href={`/publishers/${publisher?.id}`}
+              className="text-m text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 mb-4 inline-block"
+            >
+              from {publisher?.name}
+            </Link>
+          </div>
           
           <div className="mb-6">
             <FavoriteButton itemId={book.id} itemType="book" />

@@ -29,6 +29,12 @@ export default function Navigation() {
             >
               Authors
             </Link>
+            <Link 
+              href="/publishers" 
+              className="hover:text-zinc-300 transition-colors font-medium"
+            >
+              Publishers
+            </Link>
           </div>
         </div>
       </div>
