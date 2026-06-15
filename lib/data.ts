@@ -252,11 +252,13 @@ export function getBooksByAuthorId(authorId: number): Book[] {
   return books.filter((book) => book.authorId === authorId);
 }
 
-export function getAllAuthors(): Author[] {
+export async function getAllAuthors(): Promise<Author[]> {
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   return authors;
 }
 
-export function getAllBooks(): Book[] {
+export async function getAllBooks(): Promise<Book[]> {
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   return books;
 }
 

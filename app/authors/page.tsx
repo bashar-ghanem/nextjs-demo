@@ -12,7 +12,7 @@ export default async function AuthorsPage({
   }>;
 }) {
   const { page } = await searchParams;
-  const authors = getAllAuthors();
+  const authors = await getAllAuthors();
   const totalPages = Math.max(1, Math.ceil(authors.length / AUTHORS_PER_PAGE));
   const parsedPage = Number(page ?? '1');
   const currentPage =
